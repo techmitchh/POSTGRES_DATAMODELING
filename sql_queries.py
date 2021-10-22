@@ -8,24 +8,60 @@ time_table_drop = "DROP TABLE IF EXISTS time_table;"
 
 # CREATE TABLES
 
-songplay_table_create = (""" CREATE TABLE IF NOT EXISTS songplay_table (ts timestamp, userId varchar, level varchar, songid int, artistid int, session_id int, location varchar, userAgent varchar)
+# FACT TABLE
+songplay_table_create = (""" CREATE TABLE IF NOT EXISTS songplay_table (
+                                start_time time, 
+                                userId int, 
+                                level varchar, 
+                                songid varchar, 
+                                artistid varchar, 
+                                session_id int, 
+                                location varchar, 
+                                userAgent varchar)
 """)
 
-user_table_create = (""" CREATE TABLE IF NOT EXISTS user_table (userId int, firstName varchar, lastName varchar, gender varchar, level varchar);
+# DIM TABLES
+user_table_create = (""" CREATE TABLE IF NOT EXISTS user_table (
+                            userId int, 
+                            firstName varchar, 
+                            lastName varchar, 
+                            gender varchar, 
+                            level varchar
+                            );
 """)
 
-song_table_create = (""" CREATE TABLE IF NOT EXISTS song_table (song_id varchar, title varchar, artist_id varchar, year int, duration float);
+song_table_create = (""" CREATE TABLE IF NOT EXISTS song_table (
+                            song_id varchar, 
+                            title varchar, 
+                            artist_id varchar, 
+                            year int, 
+                            duration float
+                            );
 """)
 
-artist_table_create = (""" CREATE TABLE IF NOT EXISTS artist_table (artist_id varchar, artist_name varchar, artist_location varchar, artist_latitude varchar, artist_longitude float);
+artist_table_create = (""" CREATE TABLE IF NOT EXISTS artist_table (
+                              artist_id varchar, 
+                              artist_name varchar, 
+                              artist_location varchar, 
+                              artist_latitude float, 
+                              artist_longitude float
+                              );
 """)
 
-time_table_create = (""" CREATE TABLE IF NOT EXISTS time_table (hour int, day int, weekofyear int, month int, year int);
+time_table_create = (""" CREATE TABLE IF NOT EXISTS time_table (
+                            start_time time, 
+                            hour int, 
+                            day int, 
+                            weekofyear int, 
+                            month int, 
+                            year int, 
+                            weekday int
+                            );
 """)
 
 # INSERT RECORDS
 
-songplay_table_insert = (""" INSERT INTO songplay_table (ts, userId, level, songid, artistid, session_id, location, userAgent)
+songplay_table_insert = (""" INSERT INTO songplay_table (start_time, userId, level, songid, artistid, session_id, location, userAgent)
                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
 """)
 
@@ -42,8 +78,8 @@ artist_table_insert = (""" INSERT into artist_table (artist_id, artist_name, art
 """)
 
 
-time_table_insert = (""" INSERT into time_table (hour, day, weekofyear, month, year)
-                         VALUES (%s, %s, %s, %s, %s);
+time_table_insert = (""" INSERT into time_table (start_time, hour, day, weekofyear, month, year, weekday)
+                         VALUES (%s, %s, %s, %s, %s, %s, %s);
 """)
 
 # FIND SONGS

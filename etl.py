@@ -42,19 +42,26 @@ def process_log_file(cur, filepath):
     df['ts'] = pd.to_datetime(df['ts'], unit='ms') # changes timstamp from ms to datetime timestamp
     
     # insert time data records
+    df['start_time'] = df['ts'].dt.strftime('%H:%M:%S.%f')
+
+    start_time = df['start_time']
     hour = df['ts'].dt.hour
-    day = df['ts'].dt.dayofweek
-    weekofyear = df['ts'].dt.weekofyear
+    day = df['ts'].dt.day  
+    weekofyear = df['ts'].dt.strftime('%W')
     month = df['ts'].dt.month
     year = df['ts'].dt.year
-    time_data = [hour,day,weekofyear,month,year]
+    weekday = df['ts'].dt.dayofweek # The day of the week with Monday=0, Sunday=6.
 
-    column_labels = ('hour','day','weekofyear','month','year')
+    time_data = [start_time, hour, day, weekofyear, month, year, weekday]
+
+    column_labels = ('start_time','hour','day','weekofyear','month','year','weekday')
     column_data = {column_labels[0]: pd.Series(time_data[0]),
                 column_labels[1]: pd.Series(time_data[1]),
                 column_labels[2]: pd.Series(time_data[2]),
                 column_labels[3]: pd.Series(time_data[3]),
-                column_labels[4]: pd.Series(time_data[4])}
+                column_labels[4]: pd.Series(time_data[4]),
+                column_labels[5]: pd.Series(time_data[5]),
+                column_labels[6]: pd.Series(time_data[6])}
     
     time_df = pd.DataFrame(column_data)
 
@@ -69,6 +76,7 @@ def process_log_file(cur, filepath):
         cur.execute(user_table_insert, row)
 
     # insert songplay records
+    df['userAgent'] = df['userAgent'].str.strip('""')
     for index, row in df.iterrows():
         
         # get songid and artistid from song and artist tables
@@ -81,7 +89,7 @@ def process_log_file(cur, filepath):
             songid, artistid = None, None
 
         # insert songplay record
-        songplay_data = (row.ts, str(row.userId), row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
+        songplay_data = (row.start_time, str(row.userId), row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
