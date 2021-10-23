@@ -37,4 +37,4 @@ You will not be able to run test.ipynb, etl.ipynb, or etl.py until you have run 
 
 ## Entity Relationship Diagram
 
-![Sparkify ERD!](/images/SparkifyERD.pdf "Sparkify ERD")
+![SparkifyERD](/images/SparkifyERD.png "Sparkify ERD")
