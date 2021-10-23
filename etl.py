@@ -6,16 +6,17 @@ from sql_queries import *
 
 
 def process_song_file(cur, filepath):
+    """
+    - Itterates through song_data in Json files
+    
+    - Extracts data for song and artist table and inserts into Dataframe
+    
+    - Transform Dataframe and inserts data into table
+
+    """
     # open song file
-    # song_files = get_files('song_data')
-
-    # filepath = 'e:\\Udacity\\UdacityProjects\\postgres_datamodeling\\song_data\\A\\A\\A\\TRAAAAW128F429D538.json'
     df = pd.read_json(filepath, lines = True)
-    # df = pd.DataFrame()
-    # for file in song_files:
-    #     tmp_df = pd.read_json(file, lines=True)
-    #     df = df.append(tmp_df)
-
+    
     # insert song record
     s = df[['song_id','title','artist_id','year','duration']].copy()
     song_data = s.values.tolist()
@@ -31,8 +32,22 @@ def process_song_file(cur, filepath):
 
 
 def process_log_file(cur, filepath):
+    """
+    - Itterates through log_data in Json files
+    
+    - Extracts data for log and inserts into Dataframe
+    
+    - Transforms 'ts' timstamp column by splitting data into seperate columns
+      and inserts data into time table
+
+    - Clean and transform data into dataframe then insert into user_table
+    
+    - songplay_data: Retrieves the matching song_id and artist_id
+
+    - Inserts data into songplay_table 
+
+    """
     # open log file
-    # filepath = 'e:\\Udacity\\UdacityProjects\\postgres_datamodeling\\log_data\\2018\\11\\2018-11-01-events.json'
     df = pd.read_json(filepath, lines = True)
 
     # filter by NextSong action
@@ -44,6 +59,7 @@ def process_log_file(cur, filepath):
     # insert time data records
     df['start_time'] = df['ts'].dt.strftime('%H:%M:%S.%f')
 
+    # Splits data in timestamp column into multiple columns
     start_time = df['start_time']
     hour = df['ts'].dt.hour
     day = df['ts'].dt.day  
@@ -52,8 +68,10 @@ def process_log_file(cur, filepath):
     year = df['ts'].dt.year
     weekday = df['ts'].dt.dayofweek # The day of the week with Monday=0, Sunday=6.
 
+    # Create a list out of the seperate timestamp columns
     time_data = [start_time, hour, day, weekofyear, month, year, weekday]
 
+    # Create Column Names and Combines time_data with columns to create a Dataframe
     column_labels = ('start_time','hour','day','weekofyear','month','year','weekday')
     column_data = {column_labels[0]: pd.Series(time_data[0]),
                 column_labels[1]: pd.Series(time_data[1]),
@@ -65,6 +83,7 @@ def process_log_file(cur, filepath):
     
     time_df = pd.DataFrame(column_data)
 
+    # iterrates through each row of data and inserts it into time_table
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
@@ -84,16 +103,23 @@ def process_log_file(cur, filepath):
         results = cur.fetchone()
         
         if results:
-            songid, artistid = results
+            song_id, artist_id = results
         else:
-            songid, artistid = None, None
+            song_id, artist_id = None, None
 
         # insert songplay record
-        songplay_data = (row.start_time, str(row.userId), row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
+        songplay_data = (row.start_time, str(row.userId), row.level, song_id, artist_id, row.sessionId, row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
+    """
+    - Iterrates through all files and sends the filepath document to
+      either process_song_file or process_log_file
+
+    - Files are enumerated while data is being processed
+    
+    """
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
