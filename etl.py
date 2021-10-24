@@ -60,7 +60,9 @@ def process_log_file(cur, filepath):
     df['start_time'] = df['ts'].dt.strftime('%H:%M:%S.%f')
 
     # Splits data in timestamp column into multiple columns
-    start_time = df['start_time']
+    df['start_time'] = pd.to_datetime(df['ts'], format="%h%m%s")
+
+    start_time = df['start_time'].dt.tz_localize(None)
     hour = df['ts'].dt.hour
     day = df['ts'].dt.day  
     weekofyear = df['ts'].dt.strftime('%W')

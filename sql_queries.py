@@ -9,88 +9,91 @@ time_table_drop = "DROP TABLE IF EXISTS time_table;"
 # CREATE TABLES
 
 # FACT TABLE
-songplay_table_create = (""" CREATE TABLE IF NOT EXISTS songplay_table (
-                                songplay_id serial,
-                                start_time time, 
-                                userId int, 
-                                level varchar, 
-                                song_id varchar, 
-                                artist_id varchar, 
-                                session_id int, 
-                                location varchar, 
-                                userAgent varchar)
+songplay_table_create = (""" CREATE TABLE IF NOT EXISTS songplays (
+                                songplay_id serial PRIMARY KEY,
+                                start_time TIMESTAMP NOT NULL, 
+                                userId INT NOT NULL, 
+                                level VARCHAR, 
+                                song_id VARCHAR, 
+                                artist_id VARCHAR, 
+                                session_id INT, 
+                                location VARCHAR, 
+                                userAgent VARCHAR
+                                );
 """)
 
 # DIM TABLES
-user_table_create = (""" CREATE TABLE IF NOT EXISTS user_table (
-                            userId int, 
-                            firstName varchar, 
-                            lastName varchar, 
-                            gender varchar, 
-                            level varchar
+user_table_create = (""" CREATE TABLE IF NOT EXISTS users (
+                            userId INT PRIMARY KEY, 
+                            firstName VARCHAR NOT NULL, 
+                            lastName VARCHAR NOT NULL, 
+                            gender VARCHAR, 
+                            level VARCHAR
                             );
 """)
 
-song_table_create = (""" CREATE TABLE IF NOT EXISTS song_table (
-                            song_id varchar, 
-                            title varchar, 
-                            artist_id varchar, 
-                            year int, 
-                            duration float
+song_table_create = (""" CREATE TABLE IF NOT EXISTS songs (
+                            song_id VARCHAR PRIMARY KEY, 
+                            title VARCHAR NOT NULL, 
+                            artist_id VARCHAR NOT NULL, 
+                            year INT, 
+                            duration FLOAT
                             );
 """)
 
-artist_table_create = (""" CREATE TABLE IF NOT EXISTS artist_table (
-                              artist_id varchar, 
-                              artist_name varchar, 
-                              artist_location varchar, 
-                              artist_latitude float, 
-                              artist_longitude float
+artist_table_create = (""" CREATE TABLE IF NOT EXISTS artists (
+                              artist_id VARCHAR PRIMARY KEY, 
+                              artist_name VARCHAR NOT NULL, 
+                              artist_location VARCHAR, 
+                              artist_latitude FLOAT, 
+                              artist_longitude FLOAT
                               );
 """)
 
-time_table_create = (""" CREATE TABLE IF NOT EXISTS time_table (
-                            start_time time, 
-                            hour int, 
-                            day int, 
-                            weekofyear int, 
-                            month int, 
-                            year int, 
-                            weekday int
+time_table_create = (""" CREATE TABLE IF NOT EXISTS time (
+                            start_time TIMESTAMP PRIMARY KEY, 
+                            hour INT NOT NULL, 
+                            day INT NOT NULL, 
+                            weekofyear INT NOT NULL, 
+                            month INT NOT NULL, 
+                            year INT NOT NULL, 
+                            weekday INT NOT NULL
                             );
 """)
 
 # INSERT RECORDS
-songplay_table_insert = (""" INSERT INTO songplay_table (start_time, userId, level, song_id, artist_id, session_id, location, userAgent)
-                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+songplay_table_insert = (""" INSERT INTO songplays (start_time, userId, level, song_id, artist_id, session_id, location, userAgent)
+                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;
 """)
 
-user_table_insert = (""" INSERT into user_table (userId, firstName, lastName, gender, level)
-                         VALUES (%s, %s, %s, %s, %s);
+user_table_insert = (""" INSERT INTO users (userId, firstName, lastName, gender, level)
+                         VALUES (%s, %s, %s, %s, %s) 
+                         ON CONFLICT (userId)
+                         DO UPDATE SET level = EXCLUDED.level;
 """)
 
-song_table_insert = (""" INSERT into song_table (song_id, title, artist_id, year, duration)
-                         VALUES (%s, %s, %s, %s, %s);
+song_table_insert = (""" INSERT INTO songs (song_id, title, artist_id, year, duration)
+                         VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;
 """)
 
-artist_table_insert = (""" INSERT into artist_table (artist_id, artist_name, artist_location, artist_latitude, artist_longitude)
-                           VALUES (%s, %s, %s, %s, %s);
+artist_table_insert = (""" INSERT INTO artists (artist_id, artist_name, artist_location, artist_latitude, artist_longitude)
+                           VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;
 """)
 
 
-time_table_insert = (""" INSERT into time_table (start_time, hour, day, weekofyear, month, year, weekday)
-                         VALUES (%s, %s, %s, %s, %s, %s, %s);
+time_table_insert = (""" INSERT INTO time (start_time, hour, day, weekofyear, month, year, weekday)
+                         VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;
 """)
 
 # FIND SONGS
 
-song_select = (""" select song_table.song_id, artist_table.artist_id
-                     from song_table
-                     join artist_table
-                       on song_table.artist_id = artist_table.artist_id
-                      and song_table.title = %s
-                    where artist_table.artist_name = %s
-                      and song_table.duration = %s  
+song_select = (""" select songs.song_id, artists.artist_id
+                     from songs
+                     join artists
+                       on songs.artist_id = artists.artist_id
+                      and songs.title = %s
+                    where artists.artist_name = %s
+                      and songs.duration = %s  
 """)
 
 # QUERY LISTS
